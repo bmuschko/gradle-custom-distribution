@@ -1,0 +1,27 @@
+import org.gradle.distribution.DownloadGradle   
+
+apply plugin: 'base'
+version = '0.1'
+
+ext {
+    gradleVersion = '1.7'
+    companyName = 'company'
+}
+
+task downloadGradle(type: DownloadGradle) {
+    description = 'Downloads the Gradle distribution with a given version.'
+    gradleVersion = project.gradleVersion
+    destinationDir = file('gradle-downloads')
+}
+
+task customGradleDistribution(type: Zip, dependsOn: downloadGradle) {
+    description = 'Builds custom Gradle distribution and bundles initialization scripts.'
+    archiveName "$companyName-gradle-$downloadGradle.gradleVersion-$version-bin.zip"
+
+    from zipTree(downloadGradle.destinationFile)
+    into "$downloadGradle.distributionNameBase/init.d", {
+        from 'src/init.d'
+    }
+}
+
+defaultTasks 'customGradleDistribution'
